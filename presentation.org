@@ -1,0 +1,125 @@
+#+TITLE: Miner Signalled Consensus
+#+AUTHOR: Juraj Hlista
+
+#+OPTIONS: toc:nil
+#+REVEAL_ROOT: https://cdn.jsdelivr.net/npm/reveal.js
+#+REVEAL_EXTRA_CSS: ./css/extra.css
+#+REVEAL_HLEVEL: 2
+#+REVEAL_TRANS: page
+#+REVEAL_THEME: league
+#+REVEAL_TITLE_SLIDE:<h1>%t</h1><h3>%a</h3>
+
+* Overview
+- all hard forks have been *scheduled* so far (unconditional)
+- after Lima hard fork, there will be only *community* hard forks
+  (conditional):
+  - miners will signal if they support (or not) new protocol
+  - based on fork signalling result, æternity node will switch (or not) to new
+    protocol
+* Design
+** Block Heights
+ #+NAME: make-design-picture
+ #+BEGIN_SRC dot :file images/design.png :cmdline -Kdot -Tpng
+   graph {
+       rankdir = LR;
+       graph [size = "10!", bgcolor = transparent]
+       node [shape = box, fontname = "Arial", penwidth = 2, color = white, fontcolor = white];
+       edge [penwidth = 2, color = white];
+
+       h1 [label = "H1"]
+       hs [label = "HS"]
+       he [label = "HE"]
+       h2 [label = "H2"]
+       x1 [label = "" style = invis, width = 0, margin = 0]
+       x2 [label = "" style = invis, width = 0, margin = 0]
+
+       x1 -- h1 [style = solid]
+       h1 -- hs [style = dotted]
+       hs -- he [style = dotted]
+       he -- h2 [style = dotted]
+       h2 -- x2 [style = solid]
+   }
+ #+END_SRC
+
+ #+RESULTS: make-design-picture
+ [[file:images/design.png]]
+
+ - *H1* is height before fork signalling start
+ - fork signalling interval is between *HS* and *HE* (~1 week)
+ - fork signalling result computation is between *HE* and *H2* (~2 hours)
+ - *H2* is fork height, fork signalling result must be known
+** Fork Signalling Result
+ - predefined number of blocks must include agreed signal in order to switch to
+   new protocol
+ - fork signalling result must be present for *H2 - 1* block
+   - computation is performed by asynchronous process
+ - nodes are expected to have the same set of configuration parameters
+* Implementation
+** Fork Signalling Result
+ #+NAME: make-implementation-picture
+ #+BEGIN_SRC dot :file images/implementation.png :cmdline -Kdot -Tpng
+   graph {
+       rankdir = LR
+       graph [splines = splines, size = "10!", bgcolor = transparent]
+
+       node [shape = record, fontname = "Arial", penwidth = 2]
+       edge [penwidth = 2]
+
+       s [label = "", style = invis, width = 0, margin = 0]
+       node [color = white, fontcolor = white]
+       h1 [label = "H1"]
+       node [color = green, fontcolor = green]
+       hs [label = "HS"]
+       he [label = "HE"]
+       h2 [label = "H2"]
+       e [label = "v5", shape = plaintext]
+       node [color = red, fontcolor = red]
+       hsx [label = "HS"]
+       hex [label = "HE"]
+       h2x [label = "H2"]
+       ex [label = "v4", shape = plaintext]
+
+       edge [style = solid, color = white]
+       s -- h1
+       edge [style = dotted, color = green]
+       h1 -- hs
+       hs -- he
+       he -- h2
+       edge [style = solid]
+       h2  -- e
+       edge [style = dotted, color = red]
+       h1 -- hsx
+       hsx -- hex
+       hex -- h2x
+       edge [style = solid]
+       h2x -- ex
+   }
+ #+END_SRC
+
+ #+RESULTS: make-implementation-picture
+ [[file:images/implementation.png]]
+
+ - for blocks between HE - 1 and H2 - 1, new worker is spawned:
+   - searches HE - 1 block
+   - goes back to HS and counts blocks with signal
+ - results are cached for previous blocks
+** Refactoring Protocol at Height
+ - ~protocol_effective_at_height/1~ will return:
+   - ~{ok, Protocol}~
+   - *~{error, pending_protocol}~* (H2 - 1)
+ - it's used everywhere!
+ - get protocol from on-chain environment instead
+   - mempool, state channels, ...
+** Refactoring Components
+ - protocol version is needed whenever:
+   - untrusted block is inserted into database
+     - sync, peer connection, HTTP API
+   - trusted block is inserted into database
+     - locally mined/signed block, block from Stratum server
+   - block candidate is prepared
+ - block insertion/candidate preparation in ~aec_conductor~
+* Current Status
+- [[https://github.com/aeternity/protocol/pull/385][PR 385]] in protocol repo needs reviews
+- fork signalling result computation is done, PR not ready yet (refactoring first)
+- less than 50% refactoring PRs merged, but most of the refactoring work is done
+- initial work on system tests started

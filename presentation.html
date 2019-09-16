@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Miner Signalled Consensus</title>
+<meta name="author" content="(Juraj Hlista)"/>
+<style type="text/css">
+.underline { text-decoration: underline; }
+</style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js/css/reveal.css"/>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js/css/theme/league.css" id="theme"/>
+
+<link rel="stylesheet" href="./css/extra.css"/>
+
+<!-- If the query includes 'print-pdf', include the PDF print sheet -->
+<script>
+    if( window.location.search.match( /print-pdf/gi ) ) {
+        var link = document.createElement( 'link' );
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        link.href = 'https://cdn.jsdelivr.net/npm/reveal.js/css/print/pdf.css';
+        document.getElementsByTagName( 'head' )[0].appendChild( link );
+    }
+</script>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+<section id="sec-title-slide"><h1>Miner Signalled Consensus</h1><h3>Juraj Hlista</h3>
+</section>
+
+<section>
+<section id="slide-org4c13a83">
+<h2 id="org4c13a83"><span class="section-number-2">1</span> Overview</h2>
+<ul>
+<li>all hard forks have been <b>scheduled</b> so far (unconditional)</li>
+<li>after Lima hard fork, there will be only <b>community</b> hard forks
+(conditional):
+<ul>
+<li>miners will signal if they support (or not) new protocol</li>
+<li>based on fork signalling result, æternity node will switch (or not) to new
+protocol</li>
+
+</ul></li>
+
+</ul>
+</section>
+</section>
+<section>
+<section id="slide-org34a3221">
+<h2 id="org34a3221"><span class="section-number-2">2</span> Design</h2>
+<div class="outline-text-2" id="text-2">
+</div>
+</section>
+</section>
+<section>
+<section id="slide-org55fcf97">
+<h3 id="org55fcf97"><span class="section-number-3">2.1</span> Block Heights</h3>
+
+<div class="figure">
+<p><img src="images/design.png" alt="design.png" />
+</p>
+</div>
+
+<ul>
+<li><b>H1</b> is height before fork signalling start</li>
+<li>fork signalling interval is between <b>HS</b> and <b>HE</b> (~1 week)</li>
+<li>fork signalling result computation is between <b>HE</b> and <b>H2</b> (~2 hours)</li>
+<li><b>H2</b> is fork height, fork signalling result must be known</li>
+
+</ul>
+</section>
+</section>
+<section>
+<section id="slide-org5bafd8b">
+<h3 id="org5bafd8b"><span class="section-number-3">2.2</span> Fork Signalling Result</h3>
+<ul>
+<li>predefined number of blocks must include agreed signal in order to switch to
+new protocol</li>
+<li>fork signalling result must be present for <b>H2 - 1</b> block
+<ul>
+<li>computation is performed by asynchronous process</li>
+
+</ul></li>
+<li>nodes are expected to have the same set of configuration parameters</li>
+
+</ul>
+</section>
+</section>
+<section>
+<section id="slide-orgc8cc848">
+<h2 id="orgc8cc848"><span class="section-number-2">3</span> Implementation</h2>
+<div class="outline-text-2" id="text-3">
+</div>
+</section>
+</section>
+<section>
+<section id="slide-org15ccaba">
+<h3 id="org15ccaba"><span class="section-number-3">3.1</span> Fork Signalling Result</h3>
+
+<div class="figure">
+<p><img src="images/implementation.png" alt="implementation.png" />
+</p>
+</div>
+
+<ul>
+<li>for blocks between HE - 1 and H2 - 1, new worker is spawned:
+<ul>
+<li>searches HE - 1 block</li>
+<li>goes back to HS and counts blocks with signal</li>
+
+</ul></li>
+<li>results are cached for previous blocks</li>
+
+</ul>
+</section>
+</section>
+<section>
+<section id="slide-orgc9429b3">
+<h3 id="orgc9429b3"><span class="section-number-3">3.2</span> Refactoring Protocol at Height</h3>
+<ul>
+<li><code>protocol_effective_at_height/1</code> will return:
+<ul>
+<li><code>{ok, Protocol}</code></li>
+<li><b><code>{error, pending_protocol}</code></b> (H2 - 1)</li>
+
+</ul></li>
+<li>it's used everywhere!</li>
+<li>get protocol from on-chain environment instead
+<ul>
+<li>mempool, state channels, &#x2026;</li>
+
+</ul></li>
+
+</ul>
+</section>
+</section>
+<section>
+<section id="slide-org1c7dd16">
+<h3 id="org1c7dd16"><span class="section-number-3">3.3</span> Refactoring Components</h3>
+<ul>
+<li>protocol version is needed whenever:
+<ul>
+<li>untrusted block is inserted into database
+<ul>
+<li>sync, peer connection, HTTP API</li>
+
+</ul></li>
+<li>trusted block is inserted into database
+<ul>
+<li>locally mined/signed block, block from Stratum server</li>
+
+</ul></li>
+<li>block candidate is prepared</li>
+
+</ul></li>
+<li>block insertion/candidate preparation in <code>aec_conductor</code></li>
+
+</ul>
+</section>
+</section>
+<section>
+<section id="slide-org5d488db">
+<h2 id="org5d488db"><span class="section-number-2">4</span> Current Status</h2>
+<ul>
+<li><a href="https://github.com/aeternity/protocol/pull/385">PR 385</a> in protocol repo needs reviews</li>
+<li>fork signalling result computation is done, PR not ready yet (refactoring first)</li>
+<li>less than 50% refactoring PRs merged, but most of the refactoring work is done</li>
+<li>initial work on system tests started</li>
+
+</ul>
+</section>
+</section>
+</div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js/js/reveal.js"></script>
+
+<script>
+// Full list of configuration options available here:
+// https://github.com/hakimel/reveal.js#configuration
+Reveal.initialize({
+multiplex: {
+    secret: '', // null if client
+    id: '', // id, obtained from socket.io server
+    url: '' // Location of socket.io server
+},
+
+// Optional libraries used to extend on reveal.js
+dependencies: [
+ { src: 'https://cdn.jsdelivr.net/npm/reveal.js/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+ { src: 'https://cdn.jsdelivr.net/npm/reveal.js/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+ { src: 'https://cdn.jsdelivr.net/npm/reveal.js/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+ { src: 'https://cdn.jsdelivr.net/npm/reveal.js/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+ { src: 'https://cdn.jsdelivr.net/npm/reveal.js/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }]
+});
+</script>
+</body>
+</html>
