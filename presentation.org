@@ -47,7 +47,7 @@
  - *H1* is height before fork signalling start
  - fork signalling interval is between *HS* and *HE* (~1 week)
  - fork signalling result computation is between *HE* and *H2* (~2 hours)
- - *H2* is fork height, fork signalling result must be known
+ - *H2* is fork height
 ** Fork Signalling Result
  - predefined number of blocks must include agreed signal in order to switch to
    new protocol
