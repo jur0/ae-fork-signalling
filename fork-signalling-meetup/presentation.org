@@ -1,0 +1,216 @@
+#+TITLE: Miner Signalled Consensus Upgrade
+#+AUTHOR: Juraj Hlista
+
+#+OPTIONS: toc:nil num:nil
+#+REVEAL_ROOT: https://cdn.jsdelivr.net/npm/reveal.js
+#+REVEAL_EXTRA_CSS: ./css/extra.css
+#+REVEAL_HLEVEL: 1
+#+REVEAL_TRANS: page
+#+REVEAL_THEME: black
+#+REVEAL_TITLE_SLIDE:<h1>%t</h1><h3>%a</h3>
+
+* Consensus
+- agreement on the state of blockchain
+- set of rules used for validation of transactions and blocks
+- all nodes following the same rules → single blockchain
+* Forks
+** Accidental fork
+- miners find a new block at the same time
+- caused by network latency
+- no change in consensus rules
+
+#+REVEAL: split
+#+NAME: make-accidental-fork-picture1
+#+BEGIN_SRC dot :file images/accidental-fork1.png :cmdline -Tpng -Gdpi=300
+  graph {
+     rankdir = LR
+     graph [splines = ortho, nodesep = 0.5, bgcolor = transparent]
+     node  [shape = square, fontname = "Arial", style = filled, penwidth = 2, color = white]
+     edge  [penwidth = 2, color = white, style = solid]
+
+     node [fillcolor = "#66b3ff"]
+     a1 a2 a3 a4 a5
+     node [fillcolor = "#66ff66", style = invis]
+              b4 b5 b6
+
+     a0 [style = invis, width = 0]
+     bx [style = invis, width = 0]
+
+     { rank = same a4 b4 }
+     { rank = same a5 b5 }
+
+     a0 -- a1
+     a1 -- a2
+     a2 -- a3
+     a3 -- a4 [weight = 100]
+     a4 -- a5
+
+     edge [style = invis]
+     b4 -- b5
+     b5 -- b6
+     b6 -- bx
+
+     a3 -- b4
+ }
+#+END_SRC
+
+#+REVEAL: split
+#+NAME: make-accidental-fork-picture2
+#+BEGIN_SRC dot :file images/accidental-fork2.png :cmdline -Tpng -Gdpi=300
+  graph {
+     rankdir = LR
+     graph [splines = ortho, nodesep = 0.5, bgcolor = transparent]
+     node  [shape = square, fontname = "Arial", style = filled, penwidth = 2, color = white]
+     edge  [penwidth = 2, color = white, style = solid]
+
+     node [fillcolor = "#66b3ff"]
+     a1 a2 a3 a4 a5
+     node [fillcolor = "#66ff66"]
+              b4 b5 b6
+
+     a0 [style = invis, width = 0]
+     bx [style = invis, width = 0]
+
+     { rank = same a4 b4 }
+     { rank = same a5 b5 }
+
+     a0 -- a1
+     a1 -- a2
+     a2 -- a3
+     a3 -- a4 [weight = 100]
+     a4 -- a5
+
+     b4 -- b5
+     b5 -- b6
+     b6 -- bx
+
+     a3 -- b4
+ }
+#+END_SRC
+** Soft fork
+- tightens or adds new consensus rules
+- backward compatible upgrade
+  - old version of a node can still accept blocks from new node version
+  - example: 1MB block → 0.5MB block
+- not all nodes required to switch to the new version to prevent splitting the
+  network
+** Hard fork
+- loosens or eliminates the existing consensus rules
+- not backward compatible upgrade
+  - old version of a node rejects blocks from new node version
+  - example: 1MB block → 2MB block
+- all nodes required to upgrade to the new version to prevent splitting the
+  network
+* Soft & hard fork activation
+- setting a block height in the future
+  - User Activated Soft Fork
+  - Planned Hard Fork (Minerva, Fortuna, Lima)
+- relying on miner signalling
+  - Miner Activated Soft Fork
+  - Miner Activated Hard Fork ≈ Miner Signalled Consensus Upgrade (Iris)
+* Miner signalled consensus upgrade
+- uses signal (part of block header)
+- majority of blocks in certain interval need to include a predefined signal to
+  activate new consensus protocol
+- needs to be aware of accidental forks
+
+#+REVEAL: split
+#+NAME: make-miner-signalling-picture1
+#+BEGIN_SRC dot :file images/miner-signalling1.png :cmdline -Tpng -Gdpi=300
+  graph {
+     rankdir = LR
+     graph [splines = ortho, nodesep = 0.5, bgcolor = transparent]
+     node  [shape = square, fontname = "Arial", style = filled, penwidth = 2, color = white]
+     edge  [penwidth = 2, color = white, style = solid]
+
+     a0 [shape = plaintext, style = "", fontcolor = white, label = "Lima"]
+
+     node [fillcolor = "#66b3ff"]
+     a1  [label = ""]
+     s   [label = "S"]
+     ai1 [label = ""]
+     aii [shape = point, style = invis, width = 0, margin = 0]
+     aix [label = ""]
+     aie [label = "E"]
+     ae  [shape = plaintext, style = "", fontcolor = white, label = "Iris"]
+
+     node [fillcolor = "#66ff66", style = invis]
+     bix [label = ""]
+     bie [label = "E"]
+     be  [shape = plaintext, style = invis, fontcolor = white, label = "Lima"]
+
+     { rank = same aix bix }
+     { rank = same aie bie }
+     { rank = same ae be }
+
+     a0  -- a1
+     a1  -- s
+     s   -- ai1
+     ai1 -- aii [style = dotted, weight = 100]
+     aii -- aix [style = dotted, weight = 100]
+     aix -- aie [weight = 100]
+     aie -- ae
+
+     edge [style = invis]
+     bix -- bie
+     bie -- be
+
+     aii -- bix
+ }
+#+END_SRC
+
+#+REVEAL: split
+#+NAME: make-miner-signalling-picture2
+#+BEGIN_SRC dot :file images/miner-signalling2.png :cmdline -Tpng -Gdpi=300
+  graph {
+     rankdir = LR
+     graph [splines = ortho, nodesep = 0.5, bgcolor = transparent]
+     node  [shape = square, fontname = "Arial", style = filled, penwidth = 2, color = white]
+     edge  [penwidth = 2, color = white, style = solid]
+
+     a0 [shape = plaintext, style = "", fontcolor = white, label = "Lima"]
+
+     node [fillcolor = "#66b3ff"]
+     a1  [label = ""]
+     s   [label = "S"]
+     ai1 [label = ""]
+     aii [shape = point, style = invis, width = 0, margin = 0]
+     aix [label = ""]
+     aie [label = "E"]
+     ae  [shape = plaintext, style = "", fontcolor = white, label = "Iris"]
+
+     node [fillcolor = "#66ff66"]
+     bix [label = ""]
+     bie [label = "E"]
+     be  [shape = plaintext, style = "", fontcolor = white, label = "Lima"]
+
+     { rank = same aix bix }
+     { rank = same aie bie }
+     { rank = same ae be }
+
+     a0  -- a1
+     a1  -- s
+     s   -- ai1
+     ai1 -- aii [style = dotted, weight = 100]
+     aii -- aix [style = dotted, weight = 100]
+     aix -- aie [weight = 100]
+     aie -- ae
+
+     bix -- bie
+     bie -- be
+
+     aii -- bix [style = dotted]
+ }
+#+END_SRC
+** Future improvements
+- multipe consensus proposal
+  - signal not as a value, but as a bit mask
+- activation of soft forks
+* Testnet
+- fork parameters:
+  - signalling interval: 1440 blocks (3 days)
+  - majority: 734 blocks (51%)
+- network parameters:
+  - 60% of minig power signal support for Iris
+  - 40% of mining power stays with the current protocol (Lima)
+* Questions?

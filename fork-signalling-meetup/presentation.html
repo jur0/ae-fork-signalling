@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Miner Signalled Consensus Upgrade</title>
+<meta name="author" content="(Juraj Hlista)"/>
+<style type="text/css">
+.underline { text-decoration: underline; }
+</style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js/css/reveal.css"/>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js/css/theme/black.css" id="theme"/>
+
+<link rel="stylesheet" href="./css/extra.css"/>
+
+<!-- If the query includes 'print-pdf', include the PDF print sheet -->
+<script>
+    if( window.location.search.match( /print-pdf/gi ) ) {
+        var link = document.createElement( 'link' );
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        link.href = 'https://cdn.jsdelivr.net/npm/reveal.js/css/print/pdf.css';
+        document.getElementsByTagName( 'head' )[0].appendChild( link );
+    }
+</script>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+<section id="sec-title-slide"><h1>Miner Signalled Consensus Upgrade</h1><h3>Juraj Hlista</h3>
+</section>
+
+<section>
+<section id="slide-orgea0d1d9">
+<h2 id="orgea0d1d9">Consensus</h2>
+<ul>
+<li>agreement on the state of blockchain</li>
+<li>set of rules used for validation of transactions and blocks</li>
+<li>all nodes following the same rules → single blockchain</li>
+
+</ul>
+</section>
+</section>
+<section>
+<section id="slide-org3147d2f">
+<h2 id="org3147d2f">Forks</h2>
+<div class="outline-text-2" id="text-org3147d2f">
+</div>
+</section>
+<section id="slide-org29f4779">
+<h3 id="org29f4779">Accidental fork</h3>
+<ul>
+<li>miners find a new block at the same time</li>
+<li>caused by network latency</li>
+<li>no change in consensus rules</li>
+
+</ul>
+
+</section>
+<section id="slide-org29f4779-split">
+
+<div class="figure">
+<p><img src="images/accidental-fork1.png" alt="accidental-fork1.png" />
+</p>
+</div>
+
+</section>
+<section id="slide-org29f4779-split">
+
+<div class="figure">
+<p><img src="images/accidental-fork2.png" alt="accidental-fork2.png" />
+</p>
+</div>
+
+</section>
+<section id="slide-orga496079">
+<h3 id="orga496079">Soft fork</h3>
+<ul>
+<li>tightens or adds new consensus rules</li>
+<li>backward compatible upgrade
+<ul>
+<li>old version of a node can still accept blocks from new node version</li>
+<li>example: 1MB block → 0.5MB block</li>
+
+</ul></li>
+<li>not all nodes required to switch to the new version to prevent splitting the
+network</li>
+
+</ul>
+</section>
+<section id="slide-org34513cf">
+<h3 id="org34513cf">Hard fork</h3>
+<ul>
+<li>loosens or eliminates the existing consensus rules</li>
+<li>not backward compatible upgrade
+<ul>
+<li>old version of a node rejects blocks from new node version</li>
+<li>example: 1MB block → 2MB block</li>
+
+</ul></li>
+<li>all nodes required to upgrade to the new version to prevent splitting the
+network</li>
+
+</ul>
+</section>
+</section>
+<section>
+<section id="slide-org1647cfb">
+<h2 id="org1647cfb">Soft &amp; hard fork activation</h2>
+<ul>
+<li>setting a block height in the future
+<ul>
+<li>User Activated Soft Fork</li>
+<li>Planned Hard Fork (Minerva, Fortuna, Lima)</li>
+
+</ul></li>
+<li>relying on miner signalling
+<ul>
+<li>Miner Activated Soft Fork</li>
+<li>Miner Activated Hard Fork ≈ Miner Signalled Consensus Upgrade (Iris)</li>
+
+</ul></li>
+
+</ul>
+</section>
+</section>
+<section>
+<section id="slide-orgd606495">
+<h2 id="orgd606495">Miner signalled consensus upgrade</h2>
+<ul>
+<li>uses signal (part of block header)</li>
+<li>majority of blocks in certain interval need to include a predefined signal to
+activate new consensus protocol</li>
+<li>needs to be aware of accidental forks</li>
+
+</ul>
+
+</section>
+<section id="slide-orgd606495-split">
+
+<div class="figure">
+<p><img src="images/miner-signalling1.png" alt="miner-signalling1.png" />
+</p>
+</div>
+
+</section>
+<section id="slide-orgd606495-split">
+
+<div class="figure">
+<p><img src="images/miner-signalling2.png" alt="miner-signalling2.png" />
+</p>
+</div>
+
+</section>
+<section id="slide-org74b69d6">
+<h3 id="org74b69d6">Future improvements</h3>
+<ul>
+<li>multipe consensus proposal
+<ul>
+<li>signal not as a value, but as a bit mask</li>
+
+</ul></li>
+<li>activation of soft forks</li>
+
+</ul>
+</section>
+</section>
+<section>
+<section id="slide-orgbcb580e">
+<h2 id="orgbcb580e">Testnet</h2>
+<ul>
+<li>fork parameters:
+<ul>
+<li>signalling interval: 1440 blocks (3 days)</li>
+<li>majority: 734 blocks (51%)</li>
+
+</ul></li>
+<li>network parameters:
+<ul>
+<li>60% of minig power signal support for Iris</li>
+<li>40% of mining power stays with the current protocol (Lima)</li>
+
+</ul></li>
+
+</ul>
+</section>
+</section>
+<section>
+<section id="slide-orga0d8a43">
+<h2 id="orga0d8a43">Questions?</h2>
+</section>
+</section>
+</div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js/js/reveal.js"></script>
+
+<script>
+// Full list of configuration options available here:
+// https://github.com/hakimel/reveal.js#configuration
+Reveal.initialize({
+multiplex: {
+    secret: '', // null if client
+    id: '', // id, obtained from socket.io server
+    url: '' // Location of socket.io server
+},
+
+// Optional libraries used to extend on reveal.js
+dependencies: [
+ { src: 'https://cdn.jsdelivr.net/npm/reveal.js/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+ { src: 'https://cdn.jsdelivr.net/npm/reveal.js/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+ { src: 'https://cdn.jsdelivr.net/npm/reveal.js/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+ { src: 'https://cdn.jsdelivr.net/npm/reveal.js/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+ { src: 'https://cdn.jsdelivr.net/npm/reveal.js/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }]
+});
+</script>
+</body>
+</html>
